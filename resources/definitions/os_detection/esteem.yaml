@@ -1,0 +1,16 @@
+os: esteem
+group: esteem
+text: 'Esteem'
+type: network
+ifname: true
+icon: esteem
+mib_dir: esteem
+over:
+    - { graph: device_wireless_power, text: 'Signal Level' }
+    - { graph: device_wireless_rate, text: 'Wireless Rate' }
+discovery:
+    -
+      sysDescr:
+        - 'Linux ESTEEM1 4.3.0-rc6+ #1 Thu Oct 24 11:04:20 PDT 2024 armv7l'
+        - 'Linux ESTEEM2 4.3.0-rc6+ #1 Thu Oct 24 11:04:20 PDT 2024 armv7l'
+      sysObjectID: .1.3.6.1.4.1.8072.3.2.10

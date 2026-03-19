@@ -1,0 +1,40 @@
+mib: SM48TAT4XARP-MIB
+modules:
+    os:
+        hardware: SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoModelName.0
+        serial: SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoSeriesNumber.0
+        version: SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoFirmwareVersion.0
+        
+    sensors: 
+        temperature: 
+            data: 
+                - 
+                    oid: sm48tat4xarpTemperature1
+                    value: sm48tat4xarpTemperature1Celsius
+                    num_oid: '.1.3.6.1.4.1.868.2.77.4.1.13.1.1.{{ $index }}'
+                    low_limit: 0
+                    high_limit: 100
+                    descr: "Temperature 1"
+                    index: 'sm48tat4xarpTemperature1CelsiusValue.{{ $index }}'
+                - 
+                    oid: sm48tat4xarpTemperature2
+                    value: sm48tat4xarpTemperature2Celsius
+                    num_oid: '.1.3.6.1.4.1.868.2.77.4.1.13.2.1.{{ $index }}'
+                    low_limit: 0
+                    high_limit: 100
+                    descr: "Temperature 2"
+                    index: 'sm48tat4xarpTemperature2CelsiusValue.{{ $index }}'
+        power:
+            options:
+                skip_value_lt: 3
+            data:
+                -
+                    oid: sm48tat4xarpPoeStatusTable
+                    value: sm48tat4xarpPoeStatusPowerUsed
+                    num_oid: '.1.3.6.1.4.1.868.2.77.4.2.13.1.1.1.5.{{ $index }}'
+                    index: 'sm48tat4xarpPoeStatusPowerUsed.{{ $index }}'
+                    descr: "Port {{ $index }}"
+#    ports:
+#
+#    ipv4-addresses:
+#        netmask: SM48TAT4XARP-MIB::sm48tat4xarpIPConfigSubnetMask.0

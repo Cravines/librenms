@@ -1,0 +1,22 @@
+os: bosch
+text: 'Bosch'
+type: camera
+icon: bosch
+group: Bosch
+mib_dir: bosch
+over:
+    - { graph: device_bits, text: 'Device Traffic' }
+    - { graph: device_processor, text: 'CPU Usage' }
+    - { graph: device_mempool, text: 'Memory Usage' }
+    - { graph: device_temperature, text: 'Temp' }
+discovery:
+    - sysObjectID: .1.3.6.1.4.1.3967.1.1.0
+    - 
+      sysDescr: 
+          - 'Linux 567NORTHBAY 5.4.238 #1 SMP PREEMPT Wed Jan 14 10:29:18 Europe 2026 aarch64'
+          - 'Linux 175EASTDROPSTATION 5.4.238 #1 SMP PREEMPT Wed Jan 14 10:29:18 Europe 2026 aarch64'
+          - 'Linux 190E-MULTI-CAM 5.4.238 #1 SMP PREEMPT Wed Jan 14 10:29:18 Europe 2026 aarch64'
+          - 'Linux 567CONTROLROOMN 5.15.173 #1 SMP PREEMPT Tue Jan 13 13:43:05 CET 2026 aarch64'
+          - 'Linux 567CONTROLROOMS 5.15.173 #1 SMP PREEMPT Tue Jan 13 13:43:05 CET 2026 aarch64'
+          - 'Linux 190WESTMULTICAMERA 5.4.238 #1 SMP PREEMPT Wed Jan 14 10:29:18 Europe 2026 aarch64'
+      sysObjectID: .1.3.6.1.4.1.8072.3.2.10

@@ -1,0 +1,9 @@
+mib: EST-MIB
+modules:
+    os:
+        hardware: EST-MIB::sysModel.0
+        serial: EST-MIB::sysSerialNumber.0
+        version: EST-MIB::sysFirmwareRevision.0
+
+    core:
+        uptime: SNMPv2-MIB::sysUpTime.0

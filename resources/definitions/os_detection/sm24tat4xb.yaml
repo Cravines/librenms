@@ -1,0 +1,17 @@
+os: sm24tat4xb
+group: transition
+text: 'Transition'
+type: network
+ifname: true
+icon: transition
+mib_dir: transition
+over:
+    - { graph: device_bits, text: 'Device Traffic' }
+    - { graph: device_processor, text: 'Processor Usage' }
+    - { graph: device_temperature, text: 'Temperature' }
+    - { graph: device_power, text: 'POE' }
+discovery:
+    -
+        sysObjectID:
+            - .1.3.6.1.4.1.868.2.77.2
+

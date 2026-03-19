@@ -1,0 +1,25 @@
+mib: SM16TAT2SA-MIB
+modules:
+    os:
+        hardware: SM16TAT2SA-MIB::sm16tat2saSystemInfoModelName.0
+        serial: SM16TAT2SA-MIB::sm16tat2saSystemInfoSeriesNumber.0
+        version: SM16TAT2SA-MIB::sm16tat2saSystemInfoFirmwareVersion.0
+    sensors:
+        power:
+            options:
+                skip_value_lt: 3
+            data:
+                -
+                    oid: sm16tat2saPoeStatusTable
+                    value: sm16tat2saPoeStatusPowerUsed
+                    num_oid: '.1.3.6.1.4.1.868.2.72.2.13.2.1.1.3.{{ $index }}'
+                    index: 'sm16tat2saPoeStatusPowerUsed.{{ $index }}'
+                    descr: "Port {{ $index }}"
+#    ipv4-addressess: 
+#      data:
+#          -
+#              oid: sm16tat2saIPRoutesTable
+#              value: sm16tat2saIPRoutesGateway
+#              num_oid: '.1.3.6.1.4.1.868.2.72.1.4.1.5.1.4.{{ $index }}'
+#              index: 'sm16tat2saIPRoutesGateway. {{ $index }}'
+#              descr: "Gateway" 
