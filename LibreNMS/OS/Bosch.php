@@ -21,6 +21,9 @@ namespace LibreNMS\OS;
 use LibreNMS\OS;
 use App\Models\Device;
 use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use App\Models\EntPhysical;
+use Illuminate\Support\Collection;
+use LibreNMS\Util\Mac;
 use LibreNMS\Util\StringHelpers;
 use SnmpQuery;
 
@@ -34,8 +37,25 @@ class Bosch extends OS implements OSDiscovery
         $response = SnmpQuery::get('BSS-RCP-MIB::serial-number.0');
 
         $device->serial = preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', $response->value('BSS-RCP-MIB::serial-number.0')) ?: null;
+        /** $pattern = '/(?<zero>0)(?<digit>\d)(?<blank>\ )/';
+            $replacement = '\\2';
+            $subject = $response; */
+    }
+
+        public function discoverEntityPhysical(): Collection
+    {
+        $inventory = new Collection;
+        $response = SnmpQuery::get('BSS-RCP-MIB::serial-number.0');
+        $inventory->push(new EntPhysical([
+            'entPhysicalIndex' => 1,
+            'entPhysicalDescr' => SnmpQuery::get('BSS-RCP-MIB::oem-device-name.0')->value(),
+            'entPhysicalClass' => SnmpQuery::get('ENTITY-MIB::entPhysicalClass.1')->value(),
+            'entPhysicalName' => SnmpQuery::get('BSS-RCP-MIB::unit-name.0')->value(),
+            'entPhysicalModelName' => SnmpQuery::get('BSS-RCP-MIB::oem-device-name.0')->value(),
+            'entPhysicalSerialNum' => preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', $response->value('BSS-RCP-MIB::serial-number.0')),
+            'entPhysicalMfgName' => SnmpQuery::get('BSS-RCP-MIB::manufacturer-name.0')->value(),
+        ]));
+
+        return $inventory;
     }
 }
-/**        $pattern = '/(?<zero>0)(?<digit>\d)(?<blank>\ )/';
-        $replacement = '\\2';
-        $subject = $response; */

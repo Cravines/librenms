@@ -4,6 +4,7 @@ modules:
         hardware: SM24TAT2SA-MIB::sm24tat2saSystemInfoModelName.0
         serial: SM24TAT2SA-MIB::sm24tat2saSystemInfoSeriesNumber.0
         version: SM24TAT2SA-MIB::sm24tat2saSystemInfoFirmwareVersion.0
+        mac: SM24TAT2SA-MIB::sm24tat2saSystemInfoHostMACAddress.0
     sensors:
         power:
             options:

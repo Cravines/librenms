@@ -24,6 +24,9 @@ use LibreNMS\Interfaces\Polling\ProcessorPolling;
 use LibreNMS\OS;
 use App\Models\Device;
 use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use App\Models\EntPhysical;
+use Illuminate\Support\Collection;
+use LibreNMS\Util\Mac;
 use SnmpQuery;
 
 class Sm48tat4xarp extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery
@@ -95,4 +98,22 @@ class Sm48tat4xarp extends OS implements ProcessorDiscovery, ProcessorPolling, O
 
         return $data;
     }
+
+    public function discoverEntityPhysical(): Collection
+    {
+        $inventory = new Collection;
+
+        $inventory->push(new EntPhysical([
+            'entPhysicalIndex' => 1,
+            'entPhysicalDescr' => SnmpQuery::get('SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoSystemDescript.0')->value(),
+            'entPhysicalClass' => SnmpQuery::get('ENTITY-MIB::entPhysicalClass.1')->value(),
+            'entPhysicalName' => SnmpQuery::get('SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoSystemName.0')->value(),
+            'entPhysicalModelName' => SnmpQuery::get('SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoModelName.0')->value(),
+            'entPhysicalSerialNum' => SnmpQuery::get('SM48TAT4XARP-MIB::sm48tat4xarpSystemInfoSeriesNumber.0')->value(),
+            'entPhysicalMfgName' => 'Transition',
+        ]));
+
+        return $inventory;
+    }
+
 }

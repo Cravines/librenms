@@ -4,6 +4,7 @@ modules:
         hardware: SM8TAT2SA-MIB::sm8tat2saSystemInfoModelName.0
         serial: SM8TAT2SA-MIB::sm8tat2saSystemInfoSeriesNumber.0
         version: SM8TAT2SA-MIB::sm8tat2saSystemInfoFirmwareVersion.0
+        mac: SM8TAT2SA-MIB::sm8tat2saSystemInfoHostMACAddress.0
     sensors:
         power:
             options:

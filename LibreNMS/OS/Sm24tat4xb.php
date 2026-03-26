@@ -23,6 +23,9 @@ use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
 use LibreNMS\Interfaces\Polling\ProcessorPolling;
 use LibreNMS\OS;
 use App\Models\Device;
+use App\Models\EntPhysical;
+use Illuminate\Support\Collection;
+use LibreNMS\Util\Mac;
 use LibreNMS\Interfaces\Discovery\OSDiscovery;
 use SnmpQuery;
 
@@ -95,6 +98,24 @@ class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
 
         return $data;
     }
+
+    public function discoverEntityPhysical(): Collection
+    {
+        $inventory = new Collection;
+
+        $inventory->push(new EntPhysical([
+            'entPhysicalIndex' => 1,
+            'entPhysicalDescr' => SnmpQuery::get('SM24TAT4XB-MIB::sm24tat4xbSystemInfoSystemDescript.0')->value(),
+            'entPhysicalClass' => SnmpQuery::get('ENTITY-MIB::entPhysicalClass.1')->value(),
+            'entPhysicalName' => SnmpQuery::get('SM24TAT4XB-MIB::sm24tat4xbSystemInfoSystemName.0')->value(),
+            'entPhysicalModelName' => SnmpQuery::get('SM24TAT4XB-MIB::sm24tat4xbSystemInfoModelName.0')->value(),
+            'entPhysicalSerialNum' => SnmpQuery::get('SM24TAT4XB-MIB::sm24tat4xbSystemInfoSeriesNumber.0')->value(),
+            'entPhysicalMfgName' => 'Transition',
+        ]));
+
+        return $inventory;
+    }
+
     function process_syslog($entry, $update)
     {
         global $dev_cache;
