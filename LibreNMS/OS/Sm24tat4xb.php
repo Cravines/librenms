@@ -35,7 +35,7 @@ class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
     {
         parent::discoverOS($device); //yaml
     }
-    
+
     private string $procOid = '.1.3.6.1.4.1.868.2.77.2.1.1.1.24.0';
 
     //OID string value example: 100ms:87%, 1s:49%, 10s:42%
@@ -45,38 +45,38 @@ class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
         $cpuList = explode(',', (string) reset($input)[0]);
         foreach ($cpuList as $cpuPart) {
             $cpuValues = explode(':', $cpuPart);
-	    $cpuName = trim($cpuValues[0]);
-	    $cpuPerc = str_replace('%', '', $cpuValues[1]);
-	    $data[$cpuName] = $cpuPerc;
+            $cpuName = trim($cpuValues[0]);
+            $cpuPerc = str_replace('%', '', $cpuValues[1]);
+            $data[$cpuName] = $cpuPerc;
         }
-	    
-	return $data;
+
+        return $data;
     }
 
     public function discoverProcessors()
     {
         $data = snmpwalk_array_num($this->getDeviceArray(), $this->procOid);
         if ($data === false) {
-            return[];
-	}
+            return [];
+        }
 
-	$processors = [];
-	$count = 0;
-	foreach ($this->convertProcessorData($data) as $cpuName => $cpuPerc) {
-	    $processors [] = Processor::discover(
+        $processors = [];
+        $count = 0;
+        foreach ($this->convertProcessorData($data) as $cpuName => $cpuPerc) {
+            $processors[] = Processor::discover(
                 'sm24tat4xb',
-		$this->getDeviceId(),
-		$this->procOid,
-		$count,
-		'CPU ' . $cpuName,
-		1,
-		$cpuPerc,
-		100
-	    );
-	    $count++;
-	}
+                $this->getDeviceId(),
+                $this->procOid,
+                $count,
+                'CPU ' . $cpuName,
+                1,
+                $cpuPerc,
+                100
+            );
+            $count++;
+        }
 
-          return $processors;
+        return $processors;
     }
 
     public function pollProcessors(array $processors)
@@ -123,7 +123,7 @@ class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
         foreach (LibrenmsConfig::get('syslog_filter') as $bi) {
             if (str_contains((string) $entry['msg'], $bi)) {
                 return $entry;
-            }  
+            }
         }
 
         $entry['host'] = preg_replace('/^::ffff:/', '', (string) $entry['host']);
@@ -213,7 +213,7 @@ class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
                     }
                 }
                 $entry['msg'] = implode(' ', $msg);
-            }//end if
+            } //end if
 
             if (! isset($entry['program'])) {
                 $entry['program'] = $entry['msg'];
@@ -240,8 +240,8 @@ class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
             }
 
             unset($os);
-        }//end if
+        } //end if
 
         return $entry;
-    }//end process_syslog()
+    } //end process_syslog()
 }

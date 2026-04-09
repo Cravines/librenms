@@ -18,22 +18,21 @@
 
 namespace LibreNMS\OS;
 
-use LibreNMS\OS;
 use App\Models\Device;
-use LibreNMS\Interfaces\Discovery\OSDiscovery;
 use App\Models\EntPhysical;
 use Illuminate\Support\Collection;
+use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use LibreNMS\OS;
 use LibreNMS\Util\Mac;
 use LibreNMS\Util\StringHelpers;
 use SnmpQuery;
 
 class Bosch extends OS implements OSDiscovery
-{  
-      
+{
     public function discoverOS(Device $device): void
     {
         parent::discoverOS($device); //yaml
-        
+
         $response = SnmpQuery::get('BSS-RCP-MIB::serial-number.0');
 
         $device->serial = preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', $response->value('BSS-RCP-MIB::serial-number.0')) ?: null;
@@ -42,7 +41,7 @@ class Bosch extends OS implements OSDiscovery
             $subject = $response; */
     }
 
-        public function discoverEntityPhysical(): Collection
+    public function discoverEntityPhysical(): Collection
     {
         $inventory = new Collection;
         $response = SnmpQuery::get('BSS-RCP-MIB::serial-number.0');

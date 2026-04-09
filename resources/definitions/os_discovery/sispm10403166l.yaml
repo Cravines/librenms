@@ -1,21 +1,10 @@
 mib: SISPM10403166L-MIB
 modules:
     os:
-        hardware: SISPM10403166L-MIBsispm10403166lSystemInfoModelName.0
+        hardware: SISPM10403166L-MIB::sispm10403166lSystemInfoModelName.0
         serial: SISPM10403166L-MIB::sispm10403166lSystemInfoSeriesNumber.0
         version: SISPM10403166L-MIB::sispm10403166lSystemInfoFirmwareVersion.0
 
-    processors:
-        data:
-            -
-                oid: sispm10403166lSystemInfo
-                value: sispm10403166lSystemInfoCPULoad
-                num_oid: '.1.3.6.1.4.1.868.2.80.4.1.1.1.24.{{ $index }}'
-                index: '{{ $index }}'
-                type: sispm1040-3166-L
-                descr: '{{ $sispm10403166lSystemInfoModelName }}'
-                usage:
-                
     sensors:
         temperature:
             data:

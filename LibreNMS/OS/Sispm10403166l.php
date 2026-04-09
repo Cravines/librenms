@@ -29,7 +29,7 @@ use LibreNMS\Util\Mac;
 use LibreNMS\OS;
 use SnmpQuery;
 
-class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery
+class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery, Mac
 {
     public function discoverOS(Device $device): void
     {
@@ -58,25 +58,25 @@ class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling,
         $data = snmpwalk_array_num($this->getDeviceArray(), $this->procOid);
         if ($data === false) {
             return[];
-	}
+	    }
 
-	$processors = [];
-	$count = 0;
-	foreach ($this->convertProcessorData($data) as $cpuName => $cpuPerc) {
-	    $processors [] = Processor::discover(
-                'sispm10403166l',
-		$this->getDeviceId(),
-		$this->procOid,
-		$count,
-		'CPU ' . $cpuName,
-		1,
-		$cpuPerc,
-		100
-	    );
-	    $count++;
-	}
+	    $processors = [];
+	    $count = 0;
+	    foreach ($this->convertProcessorData($data) as $cpuName => $cpuPerc) {
+	        $processors [] = Processor::discover(
+                    'sispm10403166l',
+		    $this->getDeviceId(),
+		    $this->procOid,
+		    $count,
+		    'CPU ' . $cpuName,
+		    1,
+		    $cpuPerc,
+		    100
+	        );
+	        $count++;
+	    }
 
-          return $processors;
+            return $processors;
     }
 
     public function pollProcessors(array $processors)
