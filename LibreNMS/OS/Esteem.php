@@ -2,20 +2,28 @@
 namespace LibreNMS\OS;
 
 use LibreNMS\Device\WirelessSensor;
+use LibreNMS\Enum\WirelessSensorType;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessClientsDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessFrequencyDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessNoiseFloorDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessPowerDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessRateDiscovery;
 use LibreNMS\OS;
-
+use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use App\Models\Device;
 class Esteem extends OS implements
     WirelessClientsDiscovery,
     WirelessFrequencyDiscovery,
     WirelessNoiseFloorDiscovery,
     WirelessPowerDiscovery,
-    WirelessRateDiscovery
+    WirelessRateDiscovery,
+    OSDiscovery
 {
+    public function discoverOS(Device $device): void
+    {
+        parent::discoverOS($device); //yaml
+    }
+
     /**
     * Discover wireless frequency.  This is in Hz. Type is frequency.
     * Returns an array of LibreNMS\Device\Sensor objects that have been discovered
@@ -27,7 +35,7 @@ class Esteem extends OS implements
         $oid = '.1.3.6.1.4.1.32079.2.2.1.6.1'; //EST-MIB::wBandwidth.1
 
         return [
-            new WirelessSensor('frequency', $this->getDeviceId(), $oid, 'esteem', 1, 'Radio Frequency'),
+            new WirelessSensor(WirelessSensorType::Frequency, $this->getDeviceId(), $oid, 'esteem', 1, 'Radio Frequency'),
         ];
     }
 
@@ -53,7 +61,7 @@ class Esteem extends OS implements
             $total += $count;
 
             $sensors[] = new WirelessSensor(
-                'clients',
+                WirelessSensorType::Clients,
                 $this->getDeviceID(),
                 $oid,
                 'esteem',
@@ -64,14 +72,6 @@ class Esteem extends OS implements
 
         return $sensors;
     }
-    /**
-        $oid = '.1.3.6.1.4.1.32079.2.3.0'; //EST-MIB::wirelessPeersNumber.0
-
-        return [
-            new WirelessSensor('clients', $this->getDeviceId(), $oid, 'esteem', 1, 'Clients'),
-        ];
-    }
-    */
 
     /**
      * Discover wireless noise floor. This is in dBm/Hz. Type is noise-floor.
@@ -84,7 +84,7 @@ class Esteem extends OS implements
         $oid = '.1.3.6.1.4.1.32079.2.4.1.12.1'; //EST-MIB::pNoise.1
 
         return [
-            new WirelessSensor('noise-floor', $this->getDeviceId(), $oid, 'esteem', 1, 'Noise Floor'),
+            new WirelessSensor(WirelessSensorType::NoiseFloor, $this->getDeviceId(), $oid, 'esteem', 1, 'Noise Floor'),
         ];
     }
 
@@ -100,7 +100,7 @@ class Esteem extends OS implements
         $rx_oid = '.1.3.6.1.4.1.32079.2.4.1.11.1'; //EST-MIB::pSignal.1
 
         return [
-            new WirelessSensor('power', $this->getDeviceId(), $rx_oid, 'esteem-rx', 1, 'Signal Level'),
+            new WirelessSensor(WirelessSensorType::Power, $this->getDeviceId(), $rx_oid, 'esteem-rx', 1, 'Signal Level'),
         ];
     }
 
@@ -115,7 +115,7 @@ class Esteem extends OS implements
         $rx_oid = '.1.3.6.1.4.1.32079.2.4.1.23.1'; //EST-MIB::pRate.1
 
         return [
-            new WirelessSensor('rate', $this->getDeviceId(), $rx_oid, 'esteem-rx', 1, 'Rx Rate'),
+            new WirelessSensor(WirelessSensorType::Rate, $this->getDeviceId(), $rx_oid, 'esteem-rx', 1, 'Rx Rate'),
         ];
     }
 }

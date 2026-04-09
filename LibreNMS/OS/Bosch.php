@@ -27,7 +27,7 @@ use LibreNMS\Util\Mac;
 use LibreNMS\Util\StringHelpers;
 use SnmpQuery;
 
-class Bosch extends OS implements OSDiscovery
+class Bosch extends OS implements OSDiscovery, Mac, StringHelpers
 {
     public function discoverOS(Device $device): void
     {
@@ -35,7 +35,7 @@ class Bosch extends OS implements OSDiscovery
 
         $response = SnmpQuery::get('BSS-RCP-MIB::serial-number.0');
 
-        $device->serial = preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', $response->value('BSS-RCP-MIB::serial-number.0')) ?: null;
+        $device->serial = preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', (string) $response->value('BSS-RCP-MIB::serial-number.0')) ?: null;
         /** $pattern = '/(?<zero>0)(?<digit>\d)(?<blank>\ )/';
             $replacement = '\\2';
             $subject = $response; */
@@ -51,7 +51,7 @@ class Bosch extends OS implements OSDiscovery
             'entPhysicalClass' => SnmpQuery::get('ENTITY-MIB::entPhysicalClass.1')->value(),
             'entPhysicalName' => SnmpQuery::get('BSS-RCP-MIB::unit-name.0')->value(),
             'entPhysicalModelName' => SnmpQuery::get('BSS-RCP-MIB::oem-device-name.0')->value(),
-            'entPhysicalSerialNum' => preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', $response->value('BSS-RCP-MIB::serial-number.0')),
+            'entPhysicalSerialNum' => preg_replace('/(?<zero>0)(?<digit>\d)|(?<blank>\s)|(?<end>\X)/', '\\2', (string) $response->value('BSS-RCP-MIB::serial-number.0')),
             'entPhysicalMfgName' => SnmpQuery::get('BSS-RCP-MIB::manufacturer-name.0')->value(),
         ]));
 
