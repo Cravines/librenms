@@ -18,18 +18,18 @@
 
 namespace LibreNMS\OS;
 
-use LibreNMS\Device\Processor;
-use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
-use LibreNMS\Interfaces\Polling\ProcessorPolling;
-use LibreNMS\OS;
 use App\Models\Device;
 use App\Models\EntPhysical;
 use Illuminate\Support\Collection;
-use LibreNMS\Util\Mac;
+use LibreNMS\Device\Processor;
 use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
+use LibreNMS\Interfaces\Polling\ProcessorPolling;
+use LibreNMS\OS;
+use LibreNMS\Util\Mac;
 use SnmpQuery;
 
-class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery, Mac
+class Sm24tat4xb extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery
 {
     public function discoverOS(Device $device): void
     {

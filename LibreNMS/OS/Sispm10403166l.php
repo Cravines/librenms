@@ -18,18 +18,18 @@
 
 namespace LibreNMS\OS;
 
-use LibreNMS\Device\Processor;
-use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
-use LibreNMS\Interfaces\Polling\ProcessorPolling;
-use LibreNMS\Interfaces\Discovery\OSDiscovery;
 use App\Models\Device;
 use App\Models\EntPhysical;
 use Illuminate\Support\Collection;
-use LibreNMS\Util\Mac;
+use LibreNMS\Device\Processor;
+use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
+use LibreNMS\Interfaces\Polling\ProcessorPolling;
 use LibreNMS\OS;
+use LibreNMS\Util\Mac;
 use SnmpQuery;
 
-class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery, Mac
+class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling, OSDiscovery
 {
     public function discoverOS(Device $device): void
     {
@@ -45,12 +45,12 @@ class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling,
         $cpuList = explode(',', (string) reset($input)[0]);
         foreach ($cpuList as $cpuPart) {
             $cpuValues = explode(':', $cpuPart);
-	    $cpuName = trim($cpuValues[0]);
-	    $cpuPerc = str_replace('%', '', $cpuValues[1]);
-	    $data[$cpuName] = $cpuPerc;
+            $cpuName = trim($cpuValues[0]);
+            $cpuPerc = str_replace('%', '', $cpuValues[1]);
+            $data[$cpuName] = $cpuPerc;
         }
-	    
-	return $data;
+
+        return $data;
     }
 
     public function discoverProcessors()
@@ -58,25 +58,25 @@ class Sispm10403166l extends OS implements ProcessorDiscovery, ProcessorPolling,
         $data = snmpwalk_array_num($this->getDeviceArray(), $this->procOid);
         if ($data === false) {
             return[];
-	    }
+        }
 
-	    $processors = [];
-	    $count = 0;
-	    foreach ($this->convertProcessorData($data) as $cpuName => $cpuPerc) {
-	        $processors [] = Processor::discover(
-                    'sispm10403166l',
-		    $this->getDeviceId(),
-		    $this->procOid,
-		    $count,
-		    'CPU ' . $cpuName,
-		    1,
-		    $cpuPerc,
-		    100
-	        );
-	        $count++;
-	    }
+        $processors = [];
+        $count = 0;
+        foreach ($this->convertProcessorData($data) as $cpuName => $cpuPerc) {
+            $processors[] = Processor::discover(
+                'sispm10403166l',
+                $this->getDeviceId(),
+                $this->procOid,
+                $count,
+                'CPU ' . $cpuName,
+                1,
+                $cpuPerc,
+                100
+            );
+            $count++;
+        }
 
-            return $processors;
+        return $processors;
     }
 
     public function pollProcessors(array $processors)

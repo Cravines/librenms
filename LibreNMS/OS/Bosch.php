@@ -27,7 +27,7 @@ use LibreNMS\Util\Mac;
 use LibreNMS\Util\StringHelpers;
 use SnmpQuery;
 
-class Bosch extends OS implements OSDiscovery, Mac, StringHelpers
+class Bosch extends OS implements OSDiscovery
 {
     public function discoverOS(Device $device): void
     {

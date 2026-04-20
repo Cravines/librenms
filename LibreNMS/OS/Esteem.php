@@ -1,16 +1,18 @@
 <?php
+
 namespace LibreNMS\OS;
 
+use App\Models\Device;
 use LibreNMS\Device\WirelessSensor;
 use LibreNMS\Enum\WirelessSensorType;
+use LibreNMS\Interfaces\Discovery\OSDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessClientsDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessFrequencyDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessNoiseFloorDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessPowerDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessRateDiscovery;
 use LibreNMS\OS;
-use LibreNMS\Interfaces\Discovery\OSDiscovery;
-use App\Models\Device;
+
 class Esteem extends OS implements
     WirelessClientsDiscovery,
     WirelessFrequencyDiscovery,
@@ -25,11 +27,11 @@ class Esteem extends OS implements
     }
 
     /**
-    * Discover wireless frequency.  This is in Hz. Type is frequency.
-    * Returns an array of LibreNMS\Device\Sensor objects that have been discovered
-    *
-    * @return array Sensors
-    */
+     * Discover wireless frequency.  This is in Hz. Type is frequency.
+     * Returns an array of LibreNMS\Device\Sensor objects that have been discovered
+     *
+     * @return array Sensors
+     */
     public function discoverWirelessFrequency()
     {
         $oid = '.1.3.6.1.4.1.32079.2.2.1.6.1'; //EST-MIB::wBandwidth.1
@@ -40,11 +42,11 @@ class Esteem extends OS implements
     }
 
     /**
-    * Discover wireless client counts. Type is clients.
-    * Returns an array of LibreNMS\Device\Sensor objects that have been discovered
-    *
-    * @return array Sensors
-    */
+     * Discover wireless client counts. Type is clients.
+     * Returns an array of LibreNMS\Device\Sensor objects that have been discovered
+     *
+     * @return array Sensors
+     */
     public function discoverWirelessClients()
     {
         $counts = $this->getCacheByIndex('wirelessPeersNumber', 'EST-MIB');
@@ -56,13 +58,13 @@ class Esteem extends OS implements
         $total_oids = [];
         $total = 0;
         foreach ($counts as $index => $count) {
-            $oid = '.1.3.6.1.4.1.32079.2.3.' .$index;
+            $oid = '.1.3.6.1.4.1.32079.2.3.' . $index;
             $total_oids[] = $oid;
             $total += $count;
 
             $sensors[] = new WirelessSensor(
                 WirelessSensorType::Clients,
-                $this->getDeviceID(),
+                $this->getDeviceId(),
                 $oid,
                 'esteem',
                 $index,
@@ -96,7 +98,6 @@ class Esteem extends OS implements
      */
     public function discoverWirelessPower()
     {
-        
         $rx_oid = '.1.3.6.1.4.1.32079.2.4.1.11.1'; //EST-MIB::pSignal.1
 
         return [
