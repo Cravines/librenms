@@ -39,7 +39,9 @@ use App\Models\MplsSdpBind;
 use App\Models\MplsService;
 use App\Models\MplsTunnelArHop;
 use App\Models\MplsTunnelCHop;
+use App\Models\PortVlan;
 use App\Models\Transceiver;
+use App\Models\Vlan;
 use Illuminate\Support\Collection;
 use LibreNMS\Device\WirelessSensor;
 use LibreNMS\Enum\WirelessSensorType;
@@ -52,13 +54,14 @@ use LibreNMS\Interfaces\Discovery\Sensors\WirelessRsrqDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessRssiDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessSnrDiscovery;
 use LibreNMS\Interfaces\Discovery\TransceiverDiscovery;
+use LibreNMS\Interfaces\Discovery\VlanDiscovery;
 use LibreNMS\Interfaces\Polling\MplsPolling;
 use LibreNMS\OS;
 use LibreNMS\RRD\RrdDefinition;
 use LibreNMS\Util\IP;
 use SnmpQuery;
 
-class Timos extends OS implements MplsDiscovery, MplsPolling, TransceiverDiscovery, WirelessPowerDiscovery, WirelessSnrDiscovery, WirelessRsrqDiscovery, WirelessRssiDiscovery, WirelessRsrpDiscovery, WirelessChannelDiscovery
+class Timos extends OS implements MplsDiscovery, MplsPolling, TransceiverDiscovery, VlanDiscovery, WirelessPowerDiscovery, WirelessSnrDiscovery, WirelessRsrqDiscovery, WirelessRssiDiscovery, WirelessRsrpDiscovery, WirelessChannelDiscovery
 {
     public function discoverOS(Device $device): void
     {
@@ -943,6 +946,101 @@ class Timos extends OS implements MplsDiscovery, MplsPolling, TransceiverDiscove
         return $inventory;
     }
 
+    /**
+     * Discover VLANs on Nokia TiMOS devices
+     *
+     * Uses parent Q-BRIDGE-MIB discovery first, then falls back to
+     * extracting VLAN IDs from SAP encapsulation values.
+     *
+     * @return Collection of Vlan objects
+     */
+    public function discoverVlans(): Collection
+    {
+        // Try standard Q-BRIDGE-MIB discovery from parent
+        $vlans = parent::discoverVlans();
+        if ($vlans->isNotEmpty()) {
+            return $vlans;
+        }
+
+        // Fallback: Extract VLANs from SAP encapsulation values
+        return SnmpQuery::hideMib()->walk('TIMETRA-SAP-MIB::sapBaseInfoTable')
+            ->mapTable(function ($data, $svcId, $sapPortId, $sapEncapValue) {
+                $vlanNumber = $this->extractVlanFromEncapValue($sapEncapValue);
+
+                if ($vlanNumber < 1 || $vlanNumber > 4094) {
+                    return null;
+                }
+
+                return new Vlan([
+                    'vlan_vlan' => $vlanNumber,
+                    'vlan_name' => "VLAN $vlanNumber",
+                ]);
+            })->filter()->unique('vlan_vlan')->values();
+    }
+
+    /**
+     * Discover VLAN-Port associations on Nokia TiMOS devices
+     *
+     * Uses parent Q-BRIDGE-MIB discovery first, then falls back to
+     * extracting port membership from SAP encapsulation values.
+     *
+     * @param  Collection  $vlans  Collection of discovered Vlan objects
+     * @return Collection of PortVlan objects
+     */
+    public function discoverVlanPorts($vlans): Collection
+    {
+        // Try standard Q-BRIDGE-MIB discovery from parent
+        $portVlans = parent::discoverVlanPorts($vlans);
+        if ($portVlans->isNotEmpty()) {
+            return $portVlans;
+        }
+
+        // Fallback: Extract VLAN-Port associations from SAP encapsulation values
+        return SnmpQuery::hideMib()->walk('TIMETRA-SAP-MIB::sapBaseInfoTable')
+            ->mapTable(function ($data, $svcId, $sapPortId, $sapEncapValue) use ($vlans) {
+                $vlanNumber = $this->extractVlanFromEncapValue($sapEncapValue);
+
+                if ($vlanNumber < 1 || $vlanNumber > 4094) {
+                    return null;
+                }
+
+                $vlan = $vlans->firstWhere('vlan_vlan', $vlanNumber);
+                if (! $vlan) {
+                    return null;
+                }
+
+                $portId = PortCache::getIdFromIfIndex((int) $sapPortId, $this->getDevice());
+                if (! $portId) {
+                    return null;
+                }
+
+                return new PortVlan([
+                    'port_id' => $portId,
+                    'vlan' => $vlanNumber,
+                    'state' => 'tagged',
+                ]);
+            })->filter()->unique(fn ($item) => $item->port_id . '-' . $item->vlan)->values();
+    }
+
+    /**
+     * Extract outer VLAN ID from TmnxEncapVal
+     *
+     * TmnxEncapVal uses:
+     * - Lower 12 bits for dot1q (simple VLAN)
+     * - Lower 16 bits for outer VLAN in QinQ
+     * - Upper 16 bits for inner VLAN in QinQ
+     *
+     * @param  int|string  $encapVal  The encoded encapsulation value
+     * @return int The VLAN ID (outer VLAN for QinQ)
+     */
+    private function extractVlanFromEncapValue($encapVal): int
+    {
+        $encapVal = (int) $encapVal;
+
+        // Extract lower 12 bits for VLAN ID
+        return $encapVal & 0x0FFF;
+    }
+
     private function parseIpField(array $data, string $ngField): ?string
     {
         if (isset($data[$ngField])) {
@@ -1056,20 +1154,6 @@ class Timos extends OS implements MplsDiscovery, MplsPolling, TransceiverDiscove
                 default => null,
             };
 
-            // Parse manufacture date if available (DateAndTime OCTET STRING format)
-            // DateAndTime is an 8 or 11 byte OCTET STRING:
-            // Bytes 1-2: Year (big endian), Byte 3: Month, Byte 4: Day
-            $date = null;
-            $rawDate = $data['TIMETRA-PORT-MIB::tmnxPortSFPVendorManufactureDate'] ?? null;
-            if ($rawDate && strlen($rawDate) >= 4) {
-                $bytes = unpack('nyear/Cmonth/Cday', $rawDate);
-                if ($bytes && $bytes['year'] >= 1970 && $bytes['year'] <= 2100
-                    && $bytes['month'] >= 1 && $bytes['month'] <= 12
-                    && $bytes['day'] >= 1 && $bytes['day'] <= 31) {
-                    $date = sprintf('%04d-%02d-%02d', $bytes['year'], $bytes['month'], $bytes['day']);
-                }
-            }
-
             return new Transceiver([
                 'port_id' => (int) PortCache::getIdFromIfIndex($ifIndex, $this->getDevice()),
                 'index' => "$chassisIndex.$portId",
@@ -1079,7 +1163,7 @@ class Timos extends OS implements MplsDiscovery, MplsPolling, TransceiverDiscove
                 'oui' => $data['TIMETRA-PORT-MIB::tmnxPortSFPVendorOUI'] ?? null,
                 'model' => $data['TIMETRA-PORT-MIB::tmnxPortTransceiverModelNumber'] ?? $data['TIMETRA-PORT-MIB::tmnxPortSFPVendorPartNum'] ?? null,
                 'serial' => $data['TIMETRA-PORT-MIB::tmnxPortSFPVendorSerialNum'] ?? null,
-                'date' => $date,
+                'date' => $data['TIMETRA-PORT-MIB::tmnxPortSFPVendorManufactureDate'] ?? null,
                 'ddm' => $ddm,
                 'connector' => $connector,
                 'wavelength' => $wavelength > 0 ? $wavelength : null,

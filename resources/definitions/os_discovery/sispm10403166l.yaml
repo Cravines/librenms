@@ -1,0 +1,28 @@
+mib: SISPM10403166L-MIB
+modules:
+    os:
+        hardware: SISPM10403166L-MIB::sispm10403166lSystemInfoModelName.0
+        serial: SISPM10403166L-MIB::sispm10403166lSystemInfoSeriesNumber.0
+        version: SISPM10403166L-MIB::sispm10403166lSystemInfoFirmwareVersion.0
+
+    sensors:
+        temperature:
+            data:
+                -
+                    oid: sispm10403166lTemperature1
+                    value: sispm10403166lTemperature1Celsius
+                    num_oid: '.1.3.6.1.4.1.868.2.80.4.1.13.1.1.{{ $index }}'
+                    low_limit: 0
+                    high_limit: 100
+                    descr: "Temperature 1"
+                    index: 'sispm10403166lTemperature1CelsiusValue.{{ $index }}'
+                -
+                    oid: sispm10403166lTemperature2
+                    value: sispm10403166lTemperature2Celsius
+                    num_oid: '.1.3.6.1.4.1.868.2.80.4.1.13.2.1.{{ $index }}'
+                    low_limit: 0
+                    high_limit: 100
+                    descr: "Temperature 2"
+                    index: 'sispm10403166lTemperature2CelsiusValue.{{ $index }}'
+
+
