@@ -8,12 +8,11 @@
 
 namespace LibreNMS\OS;
 
-use LibreNMS\OS;
 use App\Models\Device;
-use LibreNMS\Interfaces\Discovery\OSDiscovery;
 use App\Models\EntPhysical;
 use Illuminate\Support\Collection;
-use LibreNMS\Util\Mac;
+use LibreNMS\Interfaces\Discovery\OSDiscovery;
+use LibreNMS\OS;
 use SnmpQuery;
 
 class Sm16tat2sa extends OS implements OSDiscovery
