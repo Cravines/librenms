@@ -28,13 +28,11 @@ namespace LibreNMS\Polling\Method\Config;
 
 use App\Facades\LibrenmsConfig;
 use App\Models\Device;
-use LibreNMS\Util\Rewrite;
+use LibreNMS\Util\IP;
 
 final readonly class SnmpConfig
 {
     public function __construct(
-        public string $target,
-
         // Secrets
         public string $version = 'v2c',
         public ?string $community = null,
@@ -44,7 +42,6 @@ final readonly class SnmpConfig
         public ?string $authalgo = null,
         public ?string $cryptopass = null,
         public ?string $cryptoalgo = null,
-        public ?string $context = null,
 
         // Settings
         public string $transport = 'udp',
@@ -57,20 +54,6 @@ final readonly class SnmpConfig
     ) {
     }
 
-    public function formattedTarget(bool $withTransport = true): string
-    {
-        $parts = [];
-
-        if ($withTransport) {
-            $parts[] = $this->transport;
-        }
-
-        $parts[] = Rewrite::addIpv6Brackets($this->target);
-        $parts[] = $this->port;
-
-        return implode(':', $parts);
-    }
-
     public static function fromDevice(Device $device): self
     {
         $timeout = (float) ($device->timeout > 0 ? $device->timeout : LibrenmsConfig::get('snmp.timeout', 1));
@@ -80,7 +63,6 @@ final readonly class SnmpConfig
         $rawBulk = $device->getAttrib('snmp_bulk') ?? LibrenmsConfig::getOsSetting($device->os, 'snmp_bulk', LibrenmsConfig::get('snmp_bulk', true));
 
         return new self(
-            target: $device->overwrite_ip ?: $device->hostname,
             version: $device->snmpver ?? 'v2c',
             community: $device->community,
             authname: $device->authname,
@@ -89,7 +71,6 @@ final readonly class SnmpConfig
             authalgo: $device->authalgo,
             cryptopass: $device->cryptopass,
             cryptoalgo: $device->cryptoalgo,
-            context: $device->context ?? null,
             transport: $device->transport ?? 'udp',
             port: (int) ($device->port ?? 161),
             timeout: max(0.1, $timeout),
@@ -98,5 +79,14 @@ final readonly class SnmpConfig
             maxOid: max(1, $configuredMaxOid),
             bulk: filter_var($rawBulk, FILTER_VALIDATE_BOOLEAN),
         );
+    }
+
+    public static function fromDeviceArray(array $device): self
+    {
+        if (isset($device['ip']) && ! IP::isValid($device['ip'])) {
+            $device['ip'] = @inet_ntop($device['ip']) ?: null;
+        }
+
+        return self::fromDevice(new Device($device));
     }
 }
