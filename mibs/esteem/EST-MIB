@@ -1,0 +1,474 @@
+-- *****************************************************************
+-- ESTEEM Enterprise MIB
+-- *****************************************************************
+--
+
+EST-MIB DEFINITIONS ::= BEGIN
+
+-- Comments go here
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY, enterprises, Integer32
+        FROM SNMPv2-SMI
+
+    DisplayString, MacAddress, TruthValue
+      FROM SNMPv2-TC;
+
+esteemwirelessmodems MODULE-IDENTITY
+    LAST-UPDATED "200810140000Z"
+    ORGANIZATION "Electronic Systems Technology, Inc."
+    CONTACT-INFO "postal: 415 North Roosevelt Street, Building B1, Kennewick, WA, 99336, email:support@esteem.com"
+    DESCRIPTION "Enterprise Private MIB"
+    REVISION "200810140000Z"
+    DESCRIPTION "Initial Revision"
+    ::= { enterprises 32079 }
+    -- .1.3.6.1.4.1.32079
+-- Top-level definitions
+
+system             OBJECT IDENTIFIER ::= { esteemwirelessmodems 1 }
+-- .1.3.6.1.4.1.32079.1
+
+-- system definitions.
+
+sysSerialNumber OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A textual description of the system's manufacturer-
+	    assigned serial number."
+    ::= { system 1 }
+-- .1.3.6.1.4.1.32079.1.1
+
+sysFirmwareRevision OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A textual description of the system's firmware version."
+    ::= { system 2 }
+-- .1.3.6.1.4.1.32079.1.2
+
+sysModel OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A textual description of the system's model type."
+    ::= { system 3 }
+-- .1.3.6.1.4.1.32079.1.3
+
+sysOperationalMode OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..16))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The currently-configured system mode."
+    ::= { system 4 }
+-- .1.3.6.1.4.1.32079.1.4
+
+sysIdentifier OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A user-supplied string that uniquely identifies this system."
+    ::= { system 5 }
+-- .1.3.6.1.4.1.32079.1.5
+
+-- wireless definitions.
+
+wireless           OBJECT IDENTIFIER ::= { esteemwirelessmodems 2 }
+-- .1.3.6.1.4.1.32079.2
+
+wirelessDevicesNumber OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of wireless network interfaces (regardless of
+            their current state) present on this system."
+    ::= { wireless 1 }
+-- .1.3.6.1.4.1.32079.2.1
+
+wirelessDeviceTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF WirelessDeviceEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of wireless interfaces.  The number of
+            entries is given by the value of wirelessDevicesNumber."
+    ::= { wireless 2 }
+-- .1.3.6.1.4.1.32079.2.2
+
+wirelessDeviceEntry OBJECT-TYPE
+    SYNTAX  WirelessDeviceEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the table of Wireless Interfaces"
+    INDEX   { wIndex }
+    ::= { wirelessDeviceTable 1 }
+-- .1.3.6.1.4.1.32079.2.2.1
+
+WirelessDeviceEntry ::=
+    SEQUENCE {
+  wIndex     Integer32,      -- 1,2,etc
+  wName      DisplayString,  -- wlan0/1/2 etc
+	wMac       DisplayString,     -- Our MAC Address
+	wMode      DisplayString,  -- ap/sta/airscope/adhoc/none
+	wFreq      Integer32,      -- operational freq
+	wBandwidth Integer32,      -- operational bandwidth
+	wSSID      OCTET STRING    -- operational bandwidth
+
+	-- XXX counters/stats?
+    }
+--
+
+wIndex OBJECT-TYPE
+    SYNTAX  Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique value for each interface.  Its value
+            ranges between 1 and the value of wirelessDevices.  The
+            value for each interface must remain constant at
+            least from one re-initialization of the entity's
+            network management system to the next re-
+            initialization."
+    ::= { wirelessDeviceEntry 1 }
+-- .1.3.6.1.4.1.32079.2.2.1.1
+
+wName OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A textual string containing the device name."
+    ::= { wirelessDeviceEntry 2 }
+-- .1.3.6.1.4.1.32079.2.2.1.2
+
+wMac OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+	STATUS  current
+    DESCRIPTION
+        "The MAC Address of our currently-associated AP."
+    ::= { wirelessDeviceEntry 3 }
+-- .1.3.6.1.4.1.320792.2.1.3
+
+wMode OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..16))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current operational mode of this interface.  ap/sta/adhoc/airscope/none -- make into ENUM?"
+    ::= { wirelessDeviceEntry 4 }
+-- .1.3.6.1.4.1.32079.2.2.1.4
+
+wFreq OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current operating frequency of this interface."
+    ::= { wirelessDeviceEntry 5 }
+-- .1.3.6.1.4.1.32079.2.2.1.5
+
+wBandwidth OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current operating bandwidth of this interface."
+    ::= { wirelessDeviceEntry 6 }
+-- .1.3.6.1.4.1.32079.2.2.1.6
+
+wSSID OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current operating SSID of this interface."
+    ::= { wirelessDeviceEntry 7 }
+-- .1.3.6.1.4.1.32079.2.2.1.7
+
+-- Wireless peers information
+
+wirelessPeersNumber OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of wireless network interfaces (regardless of
+            their current state) present on this system."
+    ::= { wireless 3 }
+-- .1.3.6.1.4.1.32079.2.3
+
+wirelessPeerTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF WirelessPeerEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of peers known to all devices.  The number of entries
+            entries is given by the value of wirelessPeersNumber."
+    ::= { wireless 4 }
+-- .1.3.6.1.4.1.32079.2.4
+
+wirelessPeerEntry OBJECT-TYPE
+    SYNTAX  WirelessPeerEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the table of Wireless Peers"
+    INDEX   { pIndex }
+    ::= { wirelessPeerTable 1 }
+-- .1.3.6.1.4.1.32079.2.4.1
+
+WirelessPeerEntry ::= 
+    SEQUENCE {
+  pIndex  Integer32,
+  pDevice Integer32,
+  pName   DisplayString,
+      pMac        DisplayString,
+      pType       Integer32,
+      pAssociated TruthValue,
+      pConnected  TruthValue,
+      pSSID       OCTET STRING,
+      pRadioID    OCTET STRING,
+      pFreq       Integer32,
+      pSignal     Integer32,
+      pNoise      Integer32,
+      pChains     Integer32,
+      pSignal0    Integer32,
+      pNoise0     Integer32,
+      pSignal1    Integer32,
+      pNoise1     Integer32,
+      pSignal2    Integer32,
+      pNoise2     Integer32,
+      pSignal3    Integer32,
+      pNoise3     Integer32,
+      pLastRx     Integer32,
+      pRate       Integer32,
+      pPortState  TruthValue
+    }
+--
+
+pIndex OBJECT-TYPE
+    SYNTAX  Integer32 (1..4096)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique value for each peer/device."
+    ::= { wirelessPeerEntry 1 }
+-- .1.3.6.1.4.1.32079.2.4.1.1
+
+pDevice OBJECT-TYPE
+    SYNTAX  Integer32 (1..4)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Maps to an entry in wirelessDevicesTable."
+    ::= { wirelessPeerEntry 2 }
+-- .1.3.6.1.4.1.32079.2.4.1.2
+
+pName OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A textual string containing the peer device name."
+    ::= { wirelessPeerEntry 3 }
+-- .1.3.6.1.4.1.32079.2.4.1.3
+
+pMac OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+	STATUS  current
+        DESCRIPTION
+            "The MAC Address of this peer."
+    ::= { wirelessPeerEntry 4 }
+-- .1.3.6.1.4.1.32079.2.4.1.4
+
+pType OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Type of peer 0 = root,1 = ap,2 = ibss,3 = station,4 = wds,5 = rrl"
+    ::= { wirelessPeerEntry 5 }
+-- .1.3.6.1.4.1.32079.2.4.1.5
+
+pAssociated OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+	STATUS  current
+        DESCRIPTION
+            "True if the peer is an associated STA."
+    ::= { wirelessPeerEntry 6 }
+-- .1.3.6.1.4.1.32079.2.4.1.6
+
+pConnected OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+	STATUS  current
+        DESCRIPTION
+            "True if the peer type WDS/RRL is Connected."
+    ::= { wirelessPeerEntry 7 }
+-- .1.3.6.1.4.1.32079.2.4.1.7
+
+pSSID OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current operating SSID of this interface."
+    ::= { wirelessPeerEntry 8 }
+-- .1.3.6.1.4.1.32079.2.4.1.8
+
+pRadioID OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Radio ID for the current peer."
+    ::= { wirelessPeerEntry 9 }
+-- .1.3.6.1.4.1.32079.2.4.1.9
+
+pFreq OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The last frequency on which we heard this unit."
+    ::= { wirelessPeerEntry 10 }
+-- .1.3.6.1.4.1.32079.2.4.1.10
+
+pSignal OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal strength, in dBm."
+    ::= { wirelessPeerEntry 11 }
+-- .1.3.6.1.4.1.32079.2.4.1.11
+
+pNoise OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current noise floor, in dBm."
+    ::= { wirelessPeerEntry 12 }
+-- .1.3.6.1.4.1.32079.2.4.1.12
+
+pChains OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current chains which designates which antennas are active"
+    ::= { wirelessPeerEntry 13 }
+-- .1.3.6.1.4.1.32079.2.4.1.13
+
+pSignal0 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal strength on Antenna Port 0, in dBm."
+    ::= { wirelessPeerEntry 14 }
+-- .1.3.6.1.4.1.32079.2.4.1.14
+
+pNoise0 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current noise floor on Antenna Port 0, in dBm."
+    ::= { wirelessPeerEntry 15 }
+-- .1.3.6.1.4.1.32079.2.4.1.15
+
+pSignal1 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal strength on Antenna Port 1, in dBm."
+    ::= { wirelessPeerEntry 16 }
+-- .1.3.6.1.4.1.32079.2.4.1.16
+
+pNoise1 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current noise floor on Antenna Port 1, in dBm."
+    ::= { wirelessPeerEntry 17 }
+-- .1.3.6.1.4.1.32079.2.4.1.17
+
+pSignal2 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal strength on Antenna Port 2, in dBm."
+    ::= { wirelessPeerEntry 18 }
+-- .1.3.6.1.4.1.32079.2.4.1.18
+
+pNoise2 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current noise floor on Antenna Port 2, in dBm."
+    ::= { wirelessPeerEntry 19 }
+-- .1.3.6.1.4.1.32079.2.4.1.19
+
+pSignal3 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal strength on Antenna Port 3, in dBm."
+    ::= { wirelessPeerEntry 20 }
+-- .1.3.6.1.4.1.32079.2.4.1.20
+
+pNoise3 OBJECT-TYPE
+    SYNTAX  Integer32 (-150..0)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current noise floor on Antenna Port 3, in dBm."
+    ::= { wirelessPeerEntry 21 }
+-- .1.3.6.1.4.1.32079.2.4.1.21
+
+pLastRx OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of seconds since we last heard this peer."
+    ::= { wirelessPeerEntry 22 }
+-- .1.3.6.1.4.1.32079.2.4.1.22
+
+pRate OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The last RX rate, specified in bps."
+    ::= { wirelessPeerEntry 23 }
+-- .1.3.6.1.4.1.32079.2.4.1.23
+
+pPortState OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+	STATUS  current
+        DESCRIPTION
+            "Bridge Port State for interface 0 = DISABLED, 1 = LISTENING, 2 = LEARNING, 3 = FORWARDING, 4 = BLOCKING, 5 = NOT PART OF BRIDGE."
+    ::= { wirelessPeerEntry 24 }
+-- .1.3.6.1.4.1.32079.2.4.1.24
+
+
+END

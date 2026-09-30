@@ -1,0 +1,12 @@
+os: rockwell
+text: 'Rockwell Automation'
+ifname: true
+type: plc
+icon: allenbradley
+mib_dir: allenbradley
+over:
+    - { graph: device_bits, text: 'Device Traffic' }
+discovery:
+    -
+        sysObjectID:
+            - .1.3.6.1.4.1.95.1.27
