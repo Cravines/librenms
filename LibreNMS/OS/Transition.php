@@ -64,7 +64,7 @@ class Transition extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
         if (is_array($value)) {
             $value = reset($value);
         }
-        if (!is_string($value) || $value === '') {
+        if (! is_string($value) || $value === '') {
             return [];
         }
         $processors = [];
@@ -78,8 +78,8 @@ class Transition extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
                 continue;
             }
             $cpuName = trim($cpuValues[0]);
-            $cpuPerc = trim($cpuValues[1], " %");
-            if ($cpuName === '' || !is_numeric($cpuPerc)) {
+            $cpuPerc = trim($cpuValues[1], ' %');
+            if ($cpuName === '' || ! is_numeric($cpuPerc)) {
                 continue;
             }
             $processors[$cpuName] = (float) $cpuPerc;
@@ -103,7 +103,7 @@ class Transition extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
             $this->getDeviceArray(),
             $procOid
         );
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
         $cpuList = $this->convertProcessorData($data);
@@ -132,7 +132,7 @@ class Transition extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
     /**
      * Poll processor data.
      *
-     * @param array $processors
+     * @param  array  $processors
      * @return array
      */
     public function pollProcessors(array $processors)
@@ -148,7 +148,7 @@ class Transition extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
             $this->getDeviceArray(),
             $procOid
         );
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
         $cpuList = $this->convertProcessorData($data);
@@ -170,7 +170,7 @@ class Transition extends OS implements ProcessorDiscovery, ProcessorPolling, OSD
                 continue;
             }
             $cpuName = $parts[1];
-            if (!isset($cpuList[$cpuName])) {
+            if (! isset($cpuList[$cpuName])) {
                 continue;
             }
             $results[$processor['processor_id']] = $cpuList[$cpuName];
