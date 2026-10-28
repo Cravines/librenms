@@ -426,6 +426,14 @@
             "section": "rules",
             "order": 8
         },
+        "alert_rule.default_max_entities": {
+            "default": 20,
+            "units": "count",
+            "group": "alerting",
+            "section": "rules",
+            "order": 3,
+            "type": "integer"
+        },
         "discovery_on_reboot": {
             "default": false,
             "type": "boolean",
@@ -716,6 +724,7 @@
                 "value.*": "array|array_keys_not_empty",
                 "value.*.listener": ["not_regex:/[:|@]/", "regex:/^\\\\SocialiteProviders\\\\[^\\\\]+\\\\[^\\\\]+ExtendSocialite$/"],
                 "value.*.redirect": "url",
+                "value.*.attribute_map": "array",
                 "value.saml.metadata": "url_or_xml",
                 "value.saml.acs": "url",
                 "value.saml.entityid": "url"
@@ -1317,18 +1326,6 @@
         "callback_proxy": {
             "type": "text"
         },
-        "collectd_dir": {
-            "type": "directory",
-            "group": "external",
-            "section": "collectd",
-            "order": 0
-        },
-        "collectd_sock": {
-            "type": "text",
-            "group": "external",
-            "section": "collectd",
-            "order": 1
-        },
         "core_descr": {
             "default": ["core"],
             "type": "array",
@@ -1673,11 +1670,6 @@
             "type": "float",
             "validate": {
                 "value": "numeric|between:0.000001,0.9"
-            },
-            "when": {
-                "setting": "icmp_check",
-                "operator": "equals",
-                "value": true
             }
         },
         "device_traffic_descr": {
@@ -1880,13 +1872,6 @@
             "default": true,
             "type": "boolean"
         },
-        "discovery_modules.cisco-vrf-lite": {
-            "order": 80,
-            "group": "discovery",
-            "section": "discovery_modules",
-            "default": true,
-            "type": "boolean"
-        },
         "discovery_modules.mac-accounting": {
             "order": 60,
             "group": "discovery",
@@ -1905,7 +1890,7 @@
             "order": 360,
             "group": "discovery",
             "section": "discovery_modules",
-            "default": false,
+            "default": true,
             "type": "boolean"
         },
         "discovery_modules.ospfv3": {
@@ -2289,18 +2274,6 @@
             "order": 3,
             "type": "boolean"
         },
-        "email_sendmail_path": {
-            "default": "/usr/sbin/sendmail",
-            "group": "alerting",
-            "section": "email",
-            "order": 5,
-            "type": "executable",
-            "when": {
-                "setting": "email_backend",
-                "operator": "equals",
-                "value": "sendmail"
-            }
-        },
         "email_smtp_auth": {
             "default": false,
             "group": "alerting",
@@ -2497,14 +2470,6 @@
             "default": false,
             "type": "boolean"
         },
-        "enable_vrf_lite_cisco": {
-            "default": true,
-            "type": "boolean"
-        },
-        "enable_vrfs": {
-            "default": true,
-            "type": "boolean"
-        },
         "error_font": {
             "type": "text"
         },
@@ -2523,31 +2488,12 @@
             "order": 2,
             "type": "text"
         },
-        "fping": {
-            "default": "fping",
-            "group": "external",
-            "section": "binaries",
-            "order": 0,
-            "type": "executable"
-        },
-        "fping6": {
-            "default": "fping6",
-            "group": "external",
-            "section": "binaries",
-            "order": 1,
-            "type": "executable"
-        },
         "fping_options.count": {
             "default": 3,
             "group": "poller",
             "section": "ping",
             "order": 2,
-            "type": "text",
-            "when": {
-                "setting": "icmp_check",
-                "operator": "equals",
-                "value": true
-            }
+            "type": "text"
         },
         "fping_options.interval": {
             "default": 500,
@@ -2555,12 +2501,7 @@
             "group": "poller",
             "section": "ping",
             "order": 3,
-            "type": "text",
-            "when": {
-                "setting": "icmp_check",
-                "operator": "equals",
-                "value": true
-            }
+            "type": "text"
         },
         "fping_options.timeout": {
             "default": 500,
@@ -2568,12 +2509,7 @@
             "group": "poller",
             "section": "ping",
             "order": 4,
-            "type": "text",
-            "when": {
-                "setting": "icmp_check",
-                "operator": "equals",
-                "value": true
-            }
+            "type": "text"
         },
         "front_page": {
             "default": "default",
@@ -5345,13 +5281,6 @@
             "section": "ipmi",
             "order": 1
         },
-        "ipmitool": {
-            "default": "/usr/bin/ipmitool",
-            "group": "external",
-            "section": "binaries",
-            "order": 3,
-            "type": "executable"
-        },
         "irc_alert": {
             "default": false,
             "type": "boolean"
@@ -5658,13 +5587,6 @@
             "group": "webui",
             "section": "worldmap",
             "order": 10
-        },
-        "nfdump": {
-            "default": "/usr/bin/nfdump",
-            "group": "external",
-            "section": "binaries",
-            "order": 8,
-            "type": "executable"
         },
         "nfsen_enable": {
             "default": false,
@@ -6095,6 +6017,18 @@
             "section": "port-descr",
             "order": 31
         },
+        "peeringdb.api_key": {
+            "default": "",
+            "group": "external",
+            "section": "peeringdb",
+            "order": 1,
+            "type": "password",
+            "when": {
+                "setting": "peeringdb.enabled",
+                "operator": "equals",
+                "value": true
+            }
+        },
         "peeringdb.enabled": {
             "default": false,
             "group": "external",
@@ -6304,6 +6238,13 @@
         },
         "poller_modules.vminfo": {
             "order": 410,
+            "group": "poller",
+            "section": "poller_modules",
+            "default": false,
+            "type": "boolean"
+        },
+        "poller_modules.vrf": {
+            "order": 420,
             "group": "poller",
             "section": "poller_modules",
             "default": false,
@@ -6682,20 +6623,12 @@
             "options": {
                 "svn": "SVN",
                 "git": "Git",
-                "git-bare": "Git bare"
+                "git-bare": "Git bare",
+                "cvs": "CVS (current config only)"
             },
             "group": "external",
             "section": "rancid",
             "order": 2
-        },
-        "rancid_repo_url": {
-            "type": "text",
-            "group": "external",
-            "section": "rancid",
-            "validate": {
-                "value": "url"
-            },
-            "order": 3
         },
         "reporting.error": {
             "group": "system",
@@ -6814,13 +6747,6 @@
             "default": false,
             "type": "boolean"
         },
-        "rrdtool": {
-            "default": "rrdtool",
-            "group": "external",
-            "section": "binaries",
-            "order": -1,
-            "type": "executable"
-        },
         "rrdtool_tune": {
             "default": false,
             "group": "poller",
@@ -6867,7 +6793,8 @@
             "options": {
                 "legacy": "legacy",
                 "cron": "cron",
-                "dispatcher": "dispatcher"
+                "dispatcher": "dispatcher",
+                "scheduler": "scheduler"
             }
         },
         "schedule_type.ping": {
@@ -7110,14 +7037,31 @@
             "default": 2,
             "type": "integer"
         },
-        "snmp.community": {
+        "snmp.backend": {
+            "group": "poller",
+            "section": "snmp",
+            "order": 0,
+            "type": "select",
+            "default": "netsnmp",
+            "options": {
+                "netsnmp": "Net-Snmp Process",
+                "phpsnmp": "Php-Snmp Module"
+            }
+        },
+        "snmp.default_credentials": {
             "group": "poller",
             "section": "snmp",
             "order": 2,
-            "type": "password-array",
-            "default": [
-                "public"
-            ]
+            "type": "array-dynamic",
+            "default": [],
+            "options": {
+                "target": "secret",
+                "placeholder": "Select secret to add..."
+            },
+            "validate": {
+                "value": "array",
+                "value.*": "integer|exists:secrets,id"
+            }
         },
         "snmp.unescape": {
             "type": "boolean"
@@ -7187,84 +7131,6 @@
                 "tcp",
                 "tcp6"
             ]
-        },
-        "snmp.v3": {
-            "group": "poller",
-            "section": "snmp",
-            "order": 3,
-            "type": "snmp3auth",
-            "default": [
-                {
-                    "authalgo": "MD5",
-                    "authlevel": "noAuthNoPriv",
-                    "authname": "root",
-                    "authpass": "",
-                    "cryptoalgo": "AES",
-                    "cryptopass": ""
-                }
-            ],
-            "validate": {
-                "value": "array",
-                "value.*.authalgo": "in:MD5,SHA,SHA-224,SHA-256,SHA-384,SHA-512",
-                "value.*.cryptoalgo": "in:AES,AES-192,AES-256,AES-256-C,DES"
-            }
-        },
-        "snmp.version": {
-            "group": "poller",
-            "section": "snmp",
-            "order": 1,
-            "type": "array",
-            "default": [
-                "v2c",
-                "v3",
-                "v1"
-            ],
-            "validate": {
-                "value": "array",
-                "value.*": "in:v1,v2c,v3"
-            }
-        },
-        "snmpbulkwalk": {
-            "default": "/usr/bin/snmpbulkwalk",
-            "group": "external",
-            "section": "binaries",
-            "order": 8,
-            "type": "executable"
-        },
-        "snmpget": {
-            "default": "/usr/bin/snmpget",
-            "group": "external",
-            "section": "binaries",
-            "order": 9,
-            "type": "executable"
-        },
-        "snmpgetnext": {
-            "default": "snmpgetnext",
-            "group": "external",
-            "section": "binaries",
-            "order": 10,
-            "type": "executable"
-        },
-        "snmptranslate": {
-            "default": "/usr/bin/snmptranslate",
-            "group": "external",
-            "section": "binaries",
-            "order": 11,
-            "type": "executable"
-        },
-        "snmpwalk": {
-            "default": "/usr/bin/snmpwalk",
-            "group": "external",
-            "section": "binaries",
-            "order": 12,
-            "type": "executable"
-        },
-        "snmptrap": {
-            "default": "/usr/bin/snmptrap",
-            "group": "external",
-            "section": "binaries",
-            "order": 13,
-            "type": "executable"
         },
         "sso.create_users": {
             "default": true,
@@ -7439,13 +7305,6 @@
             "default": true,
             "type": "boolean"
         },
-        "traceroute": {
-            "default": "traceroute",
-            "group": "external",
-            "section": "binaries",
-            "order": 13,
-            "type": "executable"
-        },
         "transit_descr": {
             "default": ["transit"],
             "type": "array",
@@ -7581,13 +7440,6 @@
         "vertical_summary": {
             "default": 0,
             "type": "integer"
-        },
-        "virsh": {
-            "default": "/usr/bin/virsh",
-            "group": "external",
-            "section": "binaries",
-            "order": 15,
-            "type": "executable"
         },
         "warn.ifdown": {
             "default": true,
