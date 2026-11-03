@@ -7,11 +7,11 @@ use App\Facades\PortCache;
 use App\Models\Device;
 use App\Models\EntPhysical;
 use App\Models\Ipv4Mac;
+use App\Models\Processor;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use LibreNMS\Device\Processor;
 use LibreNMS\Discovery\Neighbors\Neighbor;
 use LibreNMS\Discovery\Neighbors\NeighborParser;
 use LibreNMS\Enum\LldpPortIdSubtype;
@@ -58,7 +58,7 @@ class Transition extends OS implements ArpTableDiscovery, ProcessorDiscovery, Pr
         ];
         foreach ($oids as $oid) {
             $value = SnmpQuery::get($oid)->value();
-            if ($value !== null && $value !== false && $value !== '') {
+            if ($value !== '') {
                 $this->procOid = $oid;
 
                 return $this->procOid;
@@ -114,38 +114,35 @@ class Transition extends OS implements ArpTableDiscovery, ProcessorDiscovery, Pr
     /**
      * Discover processors.
      *
-     * @return array
+     * @return Collection<int, Processor>
      */
-    public function discoverProcessors()
+    public function discoverProcessors(): Collection
     {
         $procOid = $this->getProcessorOid();
         if ($procOid === null) {
-            return [];
+            return collect();
         }
-        $data = snmpwalk_array_num(
-            $this->getDeviceArray(),
-            $procOid
-        );
-        if (! is_array($data)) {
-            return [];
+        $data = SnmpQuery::get($procOid)->value();
+        if ($data === '') {
+            return collect();
         }
-        $cpuList = $this->convertProcessorData($data);
+        $cpuList = $this->convertProcessorData([$data]);
         if (empty($cpuList)) {
-            return [];
+            return collect();
         }
-        $processors = [];
+        $processors = collect();
         $count = 0;
         foreach ($cpuList as $cpuName => $cpuPerc) {
-            $processors[] = Processor::discover(
-                $this->getName(),
-                $this->getDeviceId(),
-                $procOid,
-                $count,
-                'CPU ' . $cpuName,
-                1,
-                $cpuPerc,
-                100
-            );
+            $processors->push(new Processor([
+                'processor_type' => $this->getName(),
+                'processor_oid' => $procOid,
+                'processor_index' => $count,
+                'processor_descr' => 'CPU ' . $cpuName,
+                'processor_precision' => 1,
+                'hrDeviceIndex' => null,
+                'processor_perc_warn' => 100,
+                'processor_usage' => $cpuPerc,
+            ]));
             $count++;
         }
 
@@ -153,53 +150,27 @@ class Transition extends OS implements ArpTableDiscovery, ProcessorDiscovery, Pr
     }
 
     /**
-     * Poll processor data.
+     * Poll processor data. Descriptions are generated as "CPU 100ms", "CPU 1s" and "CPU 10s".
+     * Usage stays null on a processor that could not be polled.
      *
-     * @param  array  $processors
-     * @return array
+     * @param  Collection<int, Processor>  $processors
+     * @return Collection<int, Processor>
      */
-    public function pollProcessors(array $processors)
+    public function pollProcessors(Collection $processors): Collection
     {
-        if (empty($processors)) {
-            return [];
-        }
         $procOid = $this->getProcessorOid();
         if ($procOid === null) {
-            return [];
-        }
-        $data = snmpwalk_array_num(
-            $this->getDeviceArray(),
-            $procOid
-        );
-        if (! is_array($data)) {
-            return [];
-        }
-        $cpuList = $this->convertProcessorData($data);
-        if (empty($cpuList)) {
-            return [];
-        }
-        $results = [];
-        foreach ($processors as $processor) {
-            $description = (string) $processor['processor_descr'];
-            /*
-             * Processor descriptions are generated as:
-             *
-             * CPU 100ms
-             * CPU 1s
-             * CPU 10s
-             */
-            $parts = explode(' ', $description, 2);
-            if (count($parts) !== 2) {
-                continue;
-            }
-            $cpuName = $parts[1];
-            if (! isset($cpuList[$cpuName])) {
-                continue;
-            }
-            $results[$processor['processor_id']] = $cpuList[$cpuName];
+            return $processors;
         }
 
-        return $results;
+        $cpuList = $this->convertProcessorData([SnmpQuery::get($procOid)->value()]);
+
+        foreach ($processors as $processor) {
+            $cpuName = explode(' ', (string) $processor->processor_descr, 2)[1] ?? '';
+            $processor->processor_usage = $cpuList[$cpuName] ?? null;
+        }
+
+        return $processors;
     }
 
     /**
@@ -308,7 +279,7 @@ class Transition extends OS implements ArpTableDiscovery, ProcessorDiscovery, Pr
     {
         foreach ($oids as $oid) {
             $value = SnmpQuery::get($oid)->value();
-            if ($value !== null && $value !== false && $value !== '') {
+            if ($value !== '') {
                 return $value;
             }
         }
