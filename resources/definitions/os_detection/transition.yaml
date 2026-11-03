@@ -4,8 +4,12 @@ type: network
 ifname: true
 empty_ifdescr: true
 icon: transition
+mib_dir: transition
 over:
     - { graph: device_bits, text: 'Device Traffic' }
+    - { graph: device_processor, text: 'Processor Usage' }
+    - { graph: device_temperature, text: 'Temperature' }
+    - { graph: device_power, text: 'POE' }
 discovery:
     -
         sysObjectID:
